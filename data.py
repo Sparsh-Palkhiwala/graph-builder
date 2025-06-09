@@ -4,7 +4,8 @@ GNU General Public License <https://www.gnu.org/licenses/>.
 """
 
 import pandas as pd
-from dash_html_components import Datalist, Option
+from dash import html
+from dash.html import Datalist, Option
 from datetime import datetime
 
 try:

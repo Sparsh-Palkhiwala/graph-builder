@@ -5,8 +5,7 @@ GNU General Public License <https://www.gnu.org/licenses/>.
 """
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc, html
 from dash.dependencies import Input, Output, State, ALL, MATCH
 import pandas as pd
 from data import df, options
@@ -18,18 +17,28 @@ from alias import assign_alias
 from nav import assign_nav
 
 def create_dash_app():
-    fig = fig_updater(df, xs=['dateRep'], ys=['cases_weekly']) 
+    fig = fig_updater(df, xs=['dateRep'], ys=['cases']) 
     graph_layout = dcc.Graph(figure=fig, id='plot')
     app = dash.Dash(suppress_callback_exceptions=True)
     app.layout = html.Div([
-        dcc.Location(id='url', refresh=False),
-        html.H1(children='Plotly Graph Builder'),
-        dcc.Link('/main', href='/main'),
-        html.Br(),
-        dcc.Link('/filtering', href='/filtering'),
-        html.Br(),
-        dcc.Link('/aliasing', href='/aliasing'),
-        html.Div(id='page-content',children=[main_layout,aliasing_layout,filtering_layout,graph_layout])
+        dcc.Location(id='url', refresh=False, pathname='/main'),
+        html.H1(children='Plotly Graph Builder', style={'textAlign': 'center', 'marginBottom': '30px'}),
+        
+        # Navigation
+        html.Div([
+            dcc.Link('Main', href='/main', style={'marginRight': '20px', 'fontSize': '16px', 'textDecoration': 'none'}),
+            dcc.Link('Filtering', href='/filtering', style={'marginRight': '20px', 'fontSize': '16px', 'textDecoration': 'none'}),
+            dcc.Link('Aliasing', href='/aliasing', style={'fontSize': '16px', 'textDecoration': 'none'})
+        ], style={'textAlign': 'center', 'marginBottom': '30px', 'padding': '10px', 'backgroundColor': '#f8f9fa', 'borderRadius': '5px'}),
+        
+        # All layouts (navigation will show/hide them)
+        html.Div(id='page-content', children=[
+            main_layout,
+            aliasing_layout, 
+            filtering_layout,
+            html.Hr(style={'margin': '30px 0'}),
+            graph_layout
+        ], style={'padding': '20px'})
     ])
     return app
 
@@ -89,4 +98,4 @@ def all_figure_callbacks(x, y,
     return fig, filter_history
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
