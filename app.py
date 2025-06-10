@@ -17,7 +17,7 @@ from alias import assign_alias
 from nav import assign_nav
 
 def create_dash_app():
-    fig = fig_updater(df, xs=['dateRep'], ys=['cases']) 
+    fig = fig_updater(df, xs=['dateRep'], ys=['cases'], graph_type='scatter') 
     graph_layout = dcc.Graph(figure=fig, id='plot')
     app = dash.Dash(suppress_callback_exceptions=True)
     app.layout = html.Div([
@@ -58,6 +58,7 @@ app = assign_alias(app)
      Input('color', 'value'),
      Input('hover-data', 'value'),
      Input('cartesian-prod','value'),
+     Input('graph-type', 'value'),
      Input('smoother', 'value'),
      Input('smoother-slider', 'value'),
      Input({'type': 'filter-update', 'index': ALL}, 'n_clicks')
@@ -68,7 +69,7 @@ app = assign_alias(app)
          State('current-filters', 'value')])
 def all_figure_callbacks(x, y, 
         symbol, size, color, hover_data, 
-        cartesian_prod, 
+        cartesian_prod, graph_type,
         smoother, smoother_slider,
         filter_nclicks, filter_fields, filter_lbs, filter_ubs, filter_history):
 
@@ -92,6 +93,7 @@ def all_figure_callbacks(x, y,
             color=color,
             hover_data=hover_data,
             cartesian_prod=cartesian_prod,
+            graph_type=graph_type,
             smoother=smoother,
             smoother_parameter=smoother_slider)
     fig.update_layout(transition_duration=500)
