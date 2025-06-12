@@ -32,7 +32,7 @@ def cartesian_product(xs, ys):
 
 def fig_updater(df, xs, ys, size=None, color=None, symbol=None, 
         hover_data = None, smoother = None, smoother_parameter=None, 
-        max_size=35, cartesian_prod = False):
+        max_size=35, cartesian_prod = False, graph_type='scatter'):
     """Evaluate inputs and updates the figure correctly based on inputs 
 
     x:
@@ -45,6 +45,8 @@ def fig_updater(df, xs, ys, size=None, color=None, symbol=None,
       string, label (column name)
     symbol:
       string, label (column name)
+    graph_type:
+      string, type of graph to create ('scatter', 'line', 'bar', 'histogram', 'box', 'violin')
 
     cartesian_prod:
       bool, whether the list should be expanded
@@ -158,29 +160,70 @@ def fig_updater(df, xs, ys, size=None, color=None, symbol=None,
                 fig.update_xaxes(title_text=xinst,
                         row=1+ycounter,
                         col=1+xcounter)
-                trace = go.Scattergl(x=gr[xinst],
-                        y=gr[yinst],
-                        mode='markers',
-                        name=name + '-' + xinst + '-' + yinst,
-                        hovertext=hovertext_array,
-                        marker=marker_array)
-                fig.add_trace(trace, row=ycounter+1, col=xcounter+1)
-
-                gr = gr.sort_values(by=xinst)
-                if smoother == 'whittaker':
-                    y2 = whittaker_smooth(gr[yinst].values, 10**smoother_parameter) # input is a linear range of 0 to 5
-                elif smoother == 'moving-average':
-                    y2 = gr[yinst].rolling(window=smoother_parameter, center=False).mean()
+                
+                # Create different trace types based on graph_type
+                if graph_type == 'scatter':
+                    trace = go.Scattergl(x=gr[xinst],
+                            y=gr[yinst],
+                            mode='markers',
+                            name=name + '-' + xinst + '-' + yinst,
+                            hovertext=hovertext_array,
+                            marker=marker_array)
+                elif graph_type == 'line':
+                    trace = go.Scattergl(x=gr[xinst],
+                            y=gr[yinst],
+                            mode='lines+markers',
+                            name=name + '-' + xinst + '-' + yinst,
+                            hovertext=hovertext_array,
+                            marker=marker_array)
+                elif graph_type == 'bar':
+                    trace = go.Bar(x=gr[xinst],
+                            y=gr[yinst],
+                            name=name + '-' + xinst + '-' + yinst,
+                            hovertext=hovertext_array,
+                            marker=dict(color=color_cycle[ccounter % ncolors]))
+                elif graph_type == 'histogram':
+                    trace = go.Histogram(x=gr[xinst] if yinst == 'count' else gr[yinst],
+                            name=name + '-' + (xinst if yinst == 'count' else yinst),
+                            marker=dict(color=color_cycle[ccounter % ncolors]))
+                elif graph_type == 'box':
+                    trace = go.Box(y=gr[yinst],
+                            x=gr[xinst] if dtypes[xinst] not in numeric_dtypes else None,
+                            name=name + '-' + xinst + '-' + yinst,
+                            marker=dict(color=color_cycle[ccounter % ncolors]))
+                elif graph_type == 'violin':
+                    trace = go.Violin(y=gr[yinst],
+                            x=gr[xinst] if dtypes[xinst] not in numeric_dtypes else None,
+                            name=name + '-' + xinst + '-' + yinst,
+                            marker=dict(color=color_cycle[ccounter % ncolors]))
                 else:
-                    continue
-
-                trace = go.Scattergl(x=gr[xinst],
-                        y=y2,
-                        mode='lines',
-                        name=name + '-' + xinst + '-' + yinst + '-smooth',
-                        hovertext=None,
-                        marker=dict(color=color_cycle[ccounter % ncolors]))
+                    # Default to scatter
+                    trace = go.Scattergl(x=gr[xinst],
+                            y=gr[yinst],
+                            mode='markers',
+                            name=name + '-' + xinst + '-' + yinst,
+                            hovertext=hovertext_array,
+                            marker=marker_array)
+                
                 fig.add_trace(trace, row=ycounter+1, col=xcounter+1)
+
+                # Add smoothing only for scatter and line plots
+                if graph_type in ['scatter', 'line']:
+                    gr = gr.sort_values(by=xinst)
+                    if smoother == 'whittaker':
+                        y2 = whittaker_smooth(gr[yinst].values, 10**smoother_parameter) # input is a linear range of 0 to 5
+                    elif smoother == 'moving-average':
+                        y2 = gr[yinst].rolling(window=smoother_parameter, center=False).mean()
+                    else:
+                        continue
+
+                    trace = go.Scattergl(x=gr[xinst],
+                            y=y2,
+                            mode='lines',
+                            name=name + '-' + xinst + '-' + yinst + '-smooth',
+                            hovertext=None,
+                            marker=dict(color=color_cycle[ccounter % ncolors]))
+                    fig.add_trace(trace, row=ycounter+1, col=xcounter+1)
 
     return fig
 

@@ -24,6 +24,25 @@ main_layout = html.Div(id='main', children=[
         ], style={'width': '30%', 'display': 'inline-block'})
     ], style={'marginBottom': '20px'}),
     
+    # graph type selection
+    html.Div([
+        html.Div([
+            html.H6("Select Graph Type"),
+            dcc.Dropdown(
+                options=[
+                    {'label': 'Scatter Plot', 'value': 'scatter'},
+                    {'label': 'Line Plot', 'value': 'line'},
+                    {'label': 'Bar Chart', 'value': 'bar'},
+                    {'label': 'Histogram', 'value': 'histogram'},
+                    {'label': 'Box Plot', 'value': 'box'},
+                    {'label': 'Violin Plot', 'value': 'violin'}
+                ],
+                id='graph-type',
+                value='scatter'
+            )
+        ], style={'width': '30%', 'display': 'inline-block', 'marginRight': '5%'})
+    ], style={'marginBottom': '20px'}),
+    
     # legend options (symbol, size, color)
     html.Div([
         html.Div([
